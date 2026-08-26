@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Kullanıcı Yönetimi - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Kullanıcı Yönetimi & Roller</h4>
+    <p class="text-muted small mb-0">Sistem kullanıcıları ve rol bazlı erişim kontrolü (RBAC)</p>
+  </div>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus me-1"></i>Yeni Kullanıcı Ekle</button>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Kullanıcı Adı</th>
+          <th>Ad Soyad</th>
+          <th>E-Posta</th>
+          <th>Unvan / Görev</th>
+          <th>Rol</th>
+          <th>Son Giriş</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="fw-bold text-primary">{{ u.username }}</td>
+          <td class="fw-semibold">{{ u.full_name }}</td>
+          <td class="small text-muted">{{ u.email }}</td>
+          <td class="small">{{ u.title or '-' }}</td>
+          <td>
+            {% if u.role.name == 'Admin' %}
+              <span class="badge bg-danger-subtle text-danger fw-bold">Admin</span>
+            {% elif u.role.name == 'Yönetici' %}
+              <span class="badge bg-purple-subtle text-purple" style="color:#7c3aed; background:rgba(124,58,237,0.1);">Yönetici</span>
+            {% elif u.role.name == 'Satış Personeli' %}
+              <span class="badge bg-primary-subtle text-primary">Satış Personeli</span>
+            {% elif u.role.name == 'Depo Personeli' %}
+              <span class="badge bg-warning-subtle text-warning">Depo Personeli</span>
+            {% else %}
+              <span class="badge bg-info-subtle text-info">{{ u.role.name if u.role else '-' }}</span>
+            {% endif %}
+          </td>
+          <td class="small text-muted">{{ format_date(u.last_login) if u.last_login else 'Henüz Giriş Yapmadı' }}</td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge bg-success-subtle text-success">Aktif</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">Pasif</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New User -->
+<div class="modal fade" id="newUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.create_user') }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Yeni Kullanıcı Hesabı Tanımla</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">Kullanıcı Adı *</label>
+              <input type="text" name="username" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">E-Posta *</label>
+              <input type="email" name="email" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">Ad *</label>
+              <input type="text" name="first_name" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">Soyad *</label>
+              <input type="text" name="last_name" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">Görevi / Unvanı</label>
+              <input type="text" name="title" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label small fw-medium">Sistem Rolü *</label>
+              <select name="role_id" class="form-select form-select-sm" required>
+                {% for r in roles %}
+                  <option value="{{ r.id }}">{{ r.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 mb-2">
+              <label class="form-label small fw-medium">Şifre *</label>
+              <input type="password" name="password" class="form-control form-control-sm" placeholder="Varsayılan: Nexora123!" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm px-3">Kullanıcı Oluştur</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

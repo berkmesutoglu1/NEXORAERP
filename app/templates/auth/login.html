@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giriş Yap - NEXORA ERP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="text-center mb-4">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Nexora ERP" height="50" class="mb-3">
+    <h4 class="fw-bold mb-1">NEXORA ERP</h4>
+    <p class="text-secondary small">Enterprise Resource Planning & Distribution</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="{{ url_for('auth.login') }}" method="POST">
+    <div class="mb-3">
+      <label class="form-label text-light small fw-medium">Kullanıcı Adı veya E-Posta</label>
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-light border-secondary"><i class="bi bi-person"></i></span>
+        <input type="text" name="username" class="form-label form-control bg-dark text-light border-secondary" placeholder="Örn: admin" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label text-light small fw-medium">Şifre</label>
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-light border-secondary"><i class="bi bi-lock"></i></span>
+        <input type="password" id="passwordInput" name="password" class="form-control bg-dark text-light border-secondary" placeholder="••••••••" required>
+        <button type="button" class="btn btn-outline-secondary text-light" id="togglePasswordBtn">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="remember" id="rememberCheck" checked>
+        <label class="form-check-label text-secondary small" for="rememberCheck">Beni Hatırla</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+    </button>
+  </form>
+
+  <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-center">
+    <p class="text-secondary extra-small mb-2">Hızlı Demo Girişi (Şifre: <code>Nexora123!</code>)</p>
+    <div class="d-flex flex-wrap justify-content-center gap-1">
+      <button onclick="fillDemo('admin')" class="btn btn-sm btn-outline-secondary text-light py-0">Admin</button>
+      <button onclick="fillDemo('yonetici')" class="btn btn-sm btn-outline-secondary text-light py-0">Yönetici</button>
+      <button onclick="fillDemo('satis')" class="btn btn-sm btn-outline-secondary text-light py-0">Satış</button>
+      <button onclick="fillDemo('depo')" class="btn btn-sm btn-outline-secondary text-light py-0">Depo</button>
+      <button onclick="fillDemo('muhasebe')" class="btn btn-sm btn-outline-secondary text-light py-0">Muhasebe</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fillDemo(username) {
+    document.querySelector('input[name="username"]').value = username;
+    document.querySelector('input[name="password"]').value = 'Nexora123!';
+  }
+
+  document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+    const input = document.getElementById('passwordInput');
+    const icon = this.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  });
+</script>
+</body>
+</html>

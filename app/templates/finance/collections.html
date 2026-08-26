@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Tahsilatlar - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Tahsilat Kayıtları</h4>
+    <p class="text-muted small mb-0">Müşterilerden alınan ödemeler ve kasa/banka girişleri</p>
+  </div>
+  <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newCollectionModal"><i class="bi bi-plus-lg me-1"></i>Tahsilat Kaydet</button>
+</div>
+
+<!-- Collections Table -->
+<div class="erp-card mb-4">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Tahsilat Makbuz No</th>
+          <th>Müşteri</th>
+          <th>Tarih</th>
+          <th>Ödeme Yöntemi</th>
+          <th>Kasa / Banka</th>
+          <th>Tutar (₺)</th>
+          <th>Açıklama</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in collections %}
+        <tr>
+          <td class="fw-bold text-success">{{ c.collection_number }}</td>
+          <td class="fw-semibold">{{ c.customer.company_name }}</td>
+          <td class="small text-muted">{{ format_date(c.date) }}</td>
+          <td><span class="badge bg-success-subtle text-success">{{ c.payment_method }}</span></td>
+          <td class="small">{{ c.cash_register.name if c.cash_register else '-' }}</td>
+          <td class="fw-bold fs-6 text-success">+{{ format_currency(c.amount) }}</td>
+          <td class="small text-muted">{{ c.description or '-' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Tahsilat kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Collection -->
+<div class="modal fade" id="newCollectionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('finance.collections') }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Yeni Tahsilat Kaydı</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Müşteri Seçin *</label>
+            <select name="customer_id" class="form-select" required>
+              <option value="">-- Müşteri Seçiniz --</option>
+              {% for cust in customers %}
+                <option value="{{ cust.id }}">{{ cust.company_name }} (Bakiye: ₺{{ cust.current_account.balance if cust.current_account else 0 }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Tahsilat Tutarı (₺) *</label>
+            <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Ödeme Yöntemi *</label>
+            <select name="payment_method" class="form-select" required>
+              <option value="HAVALE_EFT">Banka Havalesi / EFT</option>
+              <option value="NAKIT">Nakit Kasa Girişi</option>
+              <option value="KREDI_KARTI">Kredi Kartı / POS</option>
+              <option value="CEK">Müşteri Çeki</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Kasa / Banka Hesabı</label>
+            <select name="cash_register_id" class="form-select">
+              <option value="">-- Seçiniz --</option>
+              {% for cr in cash_registers %}
+                <option value="{{ cr.id }}">{{ cr.name }} ({{ format_currency(cr.balance) }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Dekont / Referans No</label>
+            <input type="text" name="reference_number" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Açıklama</label>
+            <textarea name="description" class="form-control" rows="2" placeholder="Örn: Fatura tahsilatı"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-success btn-sm px-3">Tahsilatı Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

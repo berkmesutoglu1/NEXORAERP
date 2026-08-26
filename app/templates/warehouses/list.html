@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Depolar - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Depo Yönetimi</h4>
+    <p class="text-muted small mb-0">Fiziksel depo ve lojistik lokasyonları</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('warehouses.transfer') }}" class="btn btn-primary btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Depo Transferi Yap</a>
+    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newWarehouseModal"><i class="bi bi-plus-lg me-1"></i>Yeni Depo Tanımla</button>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for wh in warehouses %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="erp-card h-100 p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="badge bg-primary-subtle text-primary fw-bold">{{ wh.code }}</span>
+        <span class="badge bg-success-subtle text-success">Aktif</span>
+      </div>
+      <h5 class="fw-bold mb-2">{{ wh.name }}</h5>
+      <ul class="list-unstyled mb-3 small text-muted">
+        <li class="mb-1"><i class="bi bi-person me-2"></i>Sorumlu: {{ wh.manager_name or '-' }}</li>
+        <li class="mb-1"><i class="bi bi-telephone me-2"></i>Tel: {{ wh.phone or '-' }}</li>
+        <li class="mb-0"><i class="bi bi-geo-alt me-2"></i>{{ wh.address or '-' }}</li>
+      </ul>
+      <div class="mt-auto border-top pt-2 d-flex justify-content-between align-items-center">
+        <span class="small fw-semibold text-dark">{{ wh.stocks|length }} Farklı Ürün Stokta</span>
+        <a href="{{ url_for('warehouses.detail', warehouse_id=wh.id) }}" class="btn btn-sm btn-outline-primary">Depo İçeriği &rarr;</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12 text-center py-4 text-muted">Tanımlı depo bulunmuyor.</div>
+  {% endfor %}
+</div>
+
+<!-- Modal: New Warehouse -->
+<div class="modal fade" id="newWarehouseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('warehouses.create_warehouse') }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Yeni Depo Ekle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Depo Kodu *</label>
+            <input type="text" name="code" class="form-control" placeholder="Örn: DEP-04" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Depo Adı *</label>
+            <input type="text" name="name" class="form-control" placeholder="Örn: Bursa Lojistik Depo" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Depo Sorumlusu</label>
+            <input type="text" name="manager_name" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Telefon</label>
+            <input type="text" name="phone" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Adres</label>
+            <textarea name="address" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm px-3">Depo Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Sipariş {{ order.order_number }} - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satış Siparişi: {{ order.order_number }}</h4>
+    <span class="badge bg-primary-subtle text-primary me-2">{{ order.customer.company_name }}</span>
+    <span class="badge bg-info-subtle text-info">{{ order.status }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <!-- Workflow Buttons -->
+    {% if order.status == 'Beklemede' %}
+      <form method="POST" action="{{ url_for('sales.approve_order', order_id=order.id) }}">
+        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle me-1"></i>Siparişi Onayla</button>
+      </form>
+    {% endif %}
+
+    {% if order.status in ['Onaylandı', 'Hazırlanıyor'] %}
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shipmentModal">
+        <i class="bi bi-truck me-1"></i>Sevkiyat Oluştur
+      </button>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('sales.create_invoice', order_id=order.id) }}">
+      <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-receipt me-1"></i>Fatura Kes & Cari İşle</button>
+    </form>
+
+    <a href="{{ url_for('sales.list_orders') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Siparişler</a>
+  </div>
+</div>
+
+<!-- Stock Availability Warning Banner -->
+{% if not has_stock %}
+<div class="alert alert-warning shadow-sm mb-4">
+  <div class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>DEPO STOK YETERSİZLİK UYARISI</div>
+  <ul class="mb-0 small ps-3">
+    {% for w in warnings %}
+      <li>{{ w }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <!-- Order Header Details -->
+  <div class="col-12 col-lg-4">
+    <div class="erp-card p-3 mb-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Sipariş Bilgileri</h6>
+      <ul class="list-unstyled mb-0 small">
+        <li class="mb-2"><strong>Müşteri:</strong> {{ order.customer.company_name }}</li>
+        <li class="mb-2"><strong>Çıkış Deposu:</strong> {{ order.warehouse.name }}</li>
+        <li class="mb-2"><strong>Sipariş Tarihi:</strong> {{ format_date(order.order_date) }}</li>
+        <li class="mb-2"><strong>Teslimat Adresi:</strong> {{ order.shipping_address or '-' }}</li>
+        <li class="mb-0"><strong>Notlar:</strong> {{ order.notes or '-' }}</li>
+      </ul>
+    </div>
+
+    <!-- Totals Summary Card -->
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-calculator me-2 text-primary"></i>Tutar Özeti</h6>
+      <div class="d-flex justify-content-between mb-2 small">
+        <span>Ara Toplam:</span>
+        <span class="fw-semibold">{{ format_currency(order.subtotal) }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2 small">
+        <span>KDV Toplamı:</span>
+        <span class="fw-semibold">{{ format_currency(order.vat_amount) }}</span>
+      </div>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+        <span>Genel Toplam:</span>
+        <span>{{ format_currency(order.grand_total) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Items List Table -->
+  <div class="col-12 col-lg-8">
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Sipariş Kalemleri</h6>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Ürün Adı</th>
+              <th>Miktar</th>
+              <th>Sevk Edilen</th>
+              <th>Birim Fiyat</th>
+              <th>KDV %</th>
+              <th>Toplam (₺)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ item.product.name }}</div>
+                <div class="text-muted extra-small">{{ item.product.code }}</div>
+              </td>
+              <td class="fw-bold fs-6">{{ item.quantity }} {{ item.product.unit.symbol if item.product.unit else 'ad' }}</td>
+              <td>
+                <span class="badge bg-secondary-subtle text-dark">{{ item.shipped_quantity }}</span>
+              </td>
+              <td>{{ format_currency(item.unit_price) }}</td>
+              <td>%{{ item.vat_rate }}</td>
+              <td class="fw-bold">{{ format_currency(item.total_price) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create Shipment -->
+<div class="modal fade" id="shipmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('logistics.create_shipment', sales_order_id=order.id) }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Sevkiyat Kaydı Oluştur</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-start">
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Araç Seçin</label>
+            <select name="vehicle_id" class="form-select">
+              <option value="">-- Araç Atayın --</option>
+              <option value="1">34 NEX 01 - Soğutuculu Frigo Mercedes</option>
+              <option value="2">34 NEX 02 - Ford Transit Kamyonet</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium">Şoför Seçin</label>
+            <select name="driver_id" class="form-select">
+              <option value="">-- Şoför Atayın --</option>
+              <option value="1">Mustafa Şahin</option>
+              <option value="2">Hasan Doğan</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm px-3">Sevkiyat Başlat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

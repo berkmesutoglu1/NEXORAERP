@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{% if supplier %}Tedarikçi Düzenle{% else %}Yeni Tedarikçi{% endif %} - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">{% if supplier %}Tedarikçi Düzenle: {{ supplier.company_name }}{% else %}Yeni Tedarikçi Ekle{% endif %}</h4>
+  <a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Geri</a>
+</div>
+
+<div class="erp-card p-4 col-12 col-lg-10 mx-auto">
+  <form method="POST" action="{% if supplier %}{{ url_for('suppliers.edit_supplier', supplier_id=supplier.id) }}{% else %}{{ url_for('suppliers.create_supplier') }}{% endif %}">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Tedarikçi Kodu *</label>
+        <input type="text" name="code" class="form-control" value="{{ supplier.code if supplier else '' }}" required {% if supplier %}readonly{% endif %}>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label fw-medium small">Firma Ünvanı *</label>
+        <input type="text" name="company_name" class="form-control" value="{{ supplier.company_name if supplier else '' }}" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Yetkili Kişi</label>
+        <input type="text" name="authorized_person" class="form-control" value="{{ supplier.authorized_person if supplier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Telefon</label>
+        <input type="text" name="phone" class="form-control" value="{{ supplier.phone if supplier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">E-Posta</label>
+        <input type="email" name="email" class="form-control" value="{{ supplier.email if supplier else '' }}">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vergi Numarası</label>
+        <input type="text" name="tax_number" class="form-control" value="{{ supplier.tax_number if supplier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vergi Dairesi</label>
+        <input type="text" name="tax_office" class="form-control" value="{{ supplier.tax_office if supplier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vade (Gün)</label>
+        <input type="number" name="payment_term_days" class="form-control" value="{{ supplier.payment_term_days if supplier else 30 }}">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-medium small">Banka IBAN</label>
+        <input type="text" name="iban" class="form-control" value="{{ supplier.iban if supplier else '' }}" placeholder="TR00 0000 0000 0000 0000 0000 00">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-medium small">Adres</label>
+        <textarea name="address" class="form-control" rows="2">{{ supplier.address if supplier else '' }}</textarea>
+      </div>
+
+      {% if supplier %}
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="is_active" id="activeCheck" {% if supplier.is_active %}checked{% endif %}>
+          <label class="form-check-label small" for="activeCheck">Aktif Tedarikçi</label>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-12 mt-4 text-end">
+        <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-check-circle me-1"></i>Kaydet</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

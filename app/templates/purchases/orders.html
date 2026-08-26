@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Satın Alma Siparişleri - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satın Alma Siparişleri</h4>
+    <p class="text-muted small mb-0">Tedarikçilere verilen malzeme ve gıda siparişleri</p>
+  </div>
+  <a href="{{ url_for('purchases.create_order') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Satın Alma Siparişi</a>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Sipariş No</th>
+          <th>Tedarikçi</th>
+          <th>Hedef Depo</th>
+          <th>Tarih</th>
+          <th>Genel Toplam</th>
+          <th>Durum</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('purchases.order_detail', order_id=o.id) }}" class="text-primary text-decoration-none">{{ o.order_number }}</a></td>
+          <td class="fw-semibold">{{ o.supplier.company_name }}</td>
+          <td>{{ o.warehouse.name }}</td>
+          <td class="small text-muted">{{ format_date(o.order_date) }}</td>
+          <td class="fw-bold fs-6">{{ format_currency(o.grand_total) }}</td>
+          <td>
+            {% if o.status == 'Mal Kabul Yapıldı' %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-box-arrow-in-down me-1"></i>Mal Kabul Yapıldı</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning">{{ o.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('purchases.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>Detay & Mal Kabul</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Satın alma siparişi kaydı yok.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

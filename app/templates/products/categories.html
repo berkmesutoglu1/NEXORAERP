@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Kategoriler - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Ürün Kategorileri</h4>
+    <p class="text-muted small mb-0">Ürün hiyerarşisi ve grup tanımları</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Category Create Form -->
+  <div class="col-12 col-lg-4">
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3">Yeni Kategori Ekle</h6>
+      <form method="POST" action="{{ url_for('products.categories') }}">
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Kategori Kodu *</label>
+          <input type="text" name="code" class="form-control" placeholder="Örn: CAT-07" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Kategori Adı *</label>
+          <input type="text" name="name" class="form-control" placeholder="Örn: Dondurulmuş Gıda" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Açıklama</label>
+
+          <textarea name="description" class="form-control" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-semibold"><i class="bi bi-plus-circle me-1"></i>Kategori Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category List -->
+  <div class="col-12 col-lg-8">
+    <div class="erp-card">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Kategori Adı</th>
+              <th>Açıklama</th>
+              <th>Ürün Sayısı</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat in categories %}
+            <tr>
+              <td class="fw-bold">{{ cat.code }}</td>
+              <td class="fw-semibold">{{ cat.name }}</td>
+              <td class="small text-muted">{{ cat.description or '-' }}</td>
+              <td><span class="badge bg-primary-subtle text-primary">{{ cat.products|length }} Ürün</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center py-3 text-muted">Kategori bulunmuyor.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

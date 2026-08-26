@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Yeni Teklif Oluştur - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">Yeni Satış Teklifi Oluştur</h4>
+  <a href="{{ url_for('sales.list_quotes') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Teklif Listesi</a>
+</div>
+
+<div class="erp-card p-4">
+  <form id="quoteForm" method="POST" action="{{ url_for('sales.create_quote') }}">
+    <input type="hidden" name="items_json" id="itemsJson">
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label fw-medium small">Müşteri Seçin *</label>
+        <select name="customer_id" class="form-select" required>
+          <option value="">-- Müşteri Seçiniz --</option>
+          {% for c in customers %}
+            <option value="{{ c.id }}">{{ c.company_name }} ({{ c.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-medium small">Açıklama / Notlar</label>
+        <input type="text" name="notes" class="form-control" placeholder="Örn: 15 gün opsiyonlu fiyat teklifi">
+      </div>
+    </div>
+
+    <!-- Product Selection Builder -->
+    <div class="border rounded p-3 bg-body-tertiary mb-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-box-seam me-2 text-primary"></i>Teklif Ürün Satırları</h6>
+      <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-5">
+          <label class="form-label small fw-medium">Ürün Seçin</label>
+          <select id="itemProductSelect" class="form-select form-select-sm">
+            <option value="">-- Ürün Seçin --</option>
+            {% for p in products %}
+              <option value="{{ p.id }}" data-price="{{ p.sale_price }}" data-vat="{{ p.vat_rate }}" data-unit="{{ p.unit.symbol if p.unit else 'ad' }}">
+                {{ p.name }} (Fiyat: ₺{{ p.sale_price }}, KDV: %{{ p.vat_rate }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-medium">Miktar</label>
+          <input type="number" step="0.1" id="itemQtyInput" class="form-control form-control-sm" value="1.0">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium">Birim Fiyat (₺)</label>
+          <input type="number" step="0.01" id="itemPriceInput" class="form-control form-control-sm" placeholder="0.00">
+        </div>
+        <div class="col-md-2">
+          <button type="button" id="addItemBtn" class="btn btn-success btn-sm w-100"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
+        </div>
+      </div>
+
+      <table class="table align-middle bg-white rounded shadow-sm" id="quoteItemsTable">
+        <thead class="table-light">
+          <tr>
+            <th>Ürün Adı</th>
+            <th>Miktar</th>
+            <th>Birim Fiyat</th>
+            <th>KDV %</th>
+            <th>Toplam (₺)</th>
+            <th>Sil</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTbody">
+          <!-- Dynamic Items inserted via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totals Summary -->
+    <div class="row justify-content-end mb-4">
+      <div class="col-12 col-md-4">
+        <div class="erp-card p-3">
+          <div class="d-flex justify-content-between mb-2 small">
+            <span>Ara Toplam:</span>
+            <span id="subtotalDisplay" class="fw-bold">₺0,00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 small">
+            <span>KDV Toplamı:</span>
+            <span id="vatTotalDisplay" class="fw-bold">₺0,00</span>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+            <span>Genel Toplam:</span>
+            <span id="grandTotalDisplay">₺0,00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-check-circle me-1"></i>Teklifi Kaydet</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  let quoteItems = [];
+
+  document.getElementById('itemProductSelect').addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    if (opt.value) {
+      document.getElementById('itemPriceInput').value = opt.getAttribute('data-price');
+    }
+  });
+
+  document.getElementById('addItemBtn').addEventListener('click', function() {
+    const select = document.getElementById('itemProductSelect');
+    const opt = select.options[select.selectedIndex];
+    if (!opt.value) return alert('Lütfen bir ürün seçin.');
+
+    const qty = parseFloat(document.getElementById('itemQtyInput').value) || 0;
+    const price = parseFloat(document.getElementById('itemPriceInput').value) || 0;
+    const vat = parseFloat(opt.getAttribute('data-vat')) || 10;
+
+    if (qty <= 0) return alert('Geçerli bir miktar girin.');
+
+    const tot = qty * price;
+    quoteItems.push({
+      product_id: opt.value,
+      name: opt.text.split(' (Fiyat:')[0],
+      quantity: qty,
+      unit_price: price,
+      vat_rate: vat,
+      total: tot
+    });
+
+    renderItemsTable();
+  });
+
+  function removeItem(idx) {
+    quoteItems.splice(idx, 1);
+    renderItemsTable();
+  }
+
+  function renderItemsTable() {
+    const tbody = document.getElementById('itemsTbody');
+    tbody.innerHTML = '';
+
+    let subtotal = 0;
+    let vatTot = 0;
+
+    quoteItems.forEach((item, index) => {
+      subtotal += item.total;
+      vatTot += item.total * (item.vat_rate / 100);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="fw-semibold">${item.name}</td>
+        <td>${item.quantity}</td>
+        <td>₺${item.unit_price.toFixed(2)}</td>
+        <td>%${item.vat_rate}</td>
+        <td class="fw-bold">₺${item.total.toFixed(2)}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})"><i class="bi bi-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const grand = subtotal + vatTot;
+    document.getElementById('subtotalDisplay').innerText = '₺' + subtotal.toLocaleString('tr-TR', {minimumFractionDigits:2});
+    document.getElementById('vatTotalDisplay').innerText = '₺' + vatTot.toLocaleString('tr-TR', {minimumFractionDigits:2});
+    document.getElementById('grandTotalDisplay').innerText = '₺' + grand.toLocaleString('tr-TR', {minimumFractionDigits:2});
+
+    document.getElementById('itemsJson').value = JSON.stringify(quoteItems);
+  }
+</script>
+{% endblock %}

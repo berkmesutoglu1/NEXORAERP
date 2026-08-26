@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Tedarikçiler - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Tedarikçi Yönetimi</h4>
+    <p class="text-muted small mb-0">Üretici ve distribütör tedarikçi firmalar</p>
+  </div>
+  <a href="{{ url_for('suppliers.create_supplier') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Tedarikçi Ekle</a>
+</div>
+
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('suppliers.list_suppliers') }}" class="row g-2">
+    <div class="col-12 col-md-10">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Tedarikçi adı veya kodu ara..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-2">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Ara</button>
+    </div>
+  </form>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Tedarikçi Kodu</th>
+          <th>Firma Adı</th>
+          <th>Yetkili</th>
+          <th>Telefon / İletişim</th>
+          <th>IBAN</th>
+          <th>Bakiye</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('suppliers.detail', supplier_id=s.id) }}" class="text-primary text-decoration-none">{{ s.code }}</a></td>
+          <td class="fw-semibold">{{ s.company_name }}</td>
+          <td>{{ s.authorized_person or '-' }}</td>
+          <td class="small">{{ s.phone or '-' }}</td>
+          <td class="small text-muted">{{ s.iban or '-' }}</td>
+          <td>
+            {% if s.current_account %}
+              <span class="fw-bold text-dark">{{ format_currency(s.current_account.balance) }}</span>
+            {% else %}
+              ₺0,00
+            {% endif %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{{ url_for('suppliers.detail', supplier_id=s.id) }}" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
+              <a href="{{ url_for('suppliers.edit_supplier', supplier_id=s.id) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Tedarikçi kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

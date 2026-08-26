@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.company_name }} - Müşteri Detayı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">{{ customer.company_name }}</h4>
+    <span class="badge bg-primary-subtle text-primary me-2">{{ customer.code }}</span>
+    <span class="badge bg-secondary-subtle text-secondary">{{ customer.customer_type }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('customers.edit_customer', customer_id=customer.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Düzenle</a>
+    <a href="{{ url_for('customers.list_customers') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Geri</a>
+  </div>
+</div>
+
+<!-- Header Summary Metrics -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Mevcut Cari Bakiye (Borç)</span>
+      <div class="kpi-value text-danger mt-1">{{ format_currency(current_account.balance if current_account else 0.0) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Kredi Risk Limiti</span>
+      <div class="kpi-value text-primary mt-1">{{ format_currency(customer.risk_limit) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Vade Koşulu</span>
+      <div class="kpi-value text-dark mt-1">{{ customer.payment_term_days }} Gün</div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Profile & Tabs -->
+<div class="row g-3">
+  <!-- General Info Card -->
+  <div class="col-12 col-lg-4">
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Genel Bilgiler</h6>
+      <ul class="list-unstyled mb-0 small">
+        <li class="mb-2"><strong>Yetkili:</strong> {{ customer.authorized_person or '-' }}</li>
+        <li class="mb-2"><strong>Telefon:</strong> {{ customer.phone or '-' }}</li>
+        <li class="mb-2"><strong>E-Posta:</strong> {{ customer.email or '-' }}</li>
+        <li class="mb-2"><strong>Vergi Dairesi/No:</strong> {{ customer.tax_office }} / {{ customer.tax_number }}</li>
+        <li class="mb-2"><strong>Konum:</strong> {{ customer.city }} / {{ customer.district }}</li>
+        <li class="mb-0"><strong>Adres:</strong> {{ customer.address or '-' }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Tabs: Transactions & Orders -->
+  <div class="col-12 col-lg-8">
+    <div class="erp-card">
+      <div class="erp-card-header p-0">
+        <ul class="nav nav-tabs border-0" id="customerTab" role="tablist">
+          <li class="nav-item">
+            <button class="nav-item nav-link active px-4 py-3 fw-semibold border-0" id="tx-tab" data-bs-toggle="tab" data-bs-target="#tx" type="button">Cari Hareketler</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-item nav-link px-4 py-3 fw-semibold border-0" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button">Sipariş Geçmişi</button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="tab-content p-3" id="customerTabContent">
+        <!-- Cari Hareketler Ledger Tab -->
+        <div class="tab-pane fade show active" id="tx" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>İşlem Türü</th>
+                  <th>Evrak No</th>
+                  <th>Borç (₺)</th>
+                  <th>Alacak (₺)</th>
+                  <th>Bakiye (₺)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tx in transactions %}
+                <tr>
+                  <td class="small text-muted">{{ format_date(tx.date) }}</td>
+                  <td><span class="badge bg-secondary-subtle text-dark">{{ tx.transaction_type }}</span></td>
+                  <td class="fw-semibold">{{ tx.document_number }}</td>
+                  <td class="text-danger fw-semibold">{{ format_currency(tx.debit) if tx.debit > 0 else '-' }}</td>
+                  <td class="text-success fw-semibold">{{ format_currency(tx.credit) if tx.credit > 0 else '-' }}</td>
+                  <td class="fw-bold">{{ format_currency(tx.balance_after) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center py-3 text-muted">Henüz cari hareket kaydı yok.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div class="tab-pane fade" id="orders" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Sipariş No</th>
+                  <th>Tarih</th>
+                  <th>Tutar</th>
+                  <th>Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for o in customer.sales_orders %}
+                <tr>
+                  <td><a href="{{ url_for('sales.order_detail', order_id=o.id) }}" class="fw-bold text-primary">{{ o.order_number }}</a></td>
+                  <td class="small">{{ format_date(o.order_date) }}</td>
+                  <td class="fw-bold">{{ format_currency(o.grand_total) }}</td>
+                  <td><span class="badge bg-info-subtle text-info">{{ o.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center py-3 text-muted">Geçmiş sipariş bulunmuyor.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

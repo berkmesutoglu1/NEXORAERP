@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ warehouse.name }} - Depo Detayı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">{{ warehouse.name }}</h4>
+    <span class="badge bg-primary-subtle text-primary me-2">{{ warehouse.code }}</span>
+    <span class="text-muted small"><i class="bi bi-person me-1"></i>Sorumlu: {{ warehouse.manager_name or '-' }}</span>
+  </div>
+  <a href="{{ url_for('warehouses.list_warehouses') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Depo Listesi</a>
+</div>
+
+<div class="erp-card p-3 mb-4">
+  <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-box-seam me-2 text-primary"></i>Bu Depodaki Mevcut Stoklar</h6>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Ürün Kodu</th>
+          <th>Ürün Adı</th>
+          <th>Kategori</th>
+          <th>Mevcut Miktar</th>
+          <th>Rezerve Miktar</th>
+          <th>Kullanılabilir Stok</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stocks %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('products.detail', product_id=s.product.id) }}" class="text-primary text-decoration-none">{{ s.product.code }}</a></td>
+          <td class="fw-semibold">{{ s.product.name }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ s.product.category.name if s.product.category else '-' }}</span></td>
+          <td class="fw-bold fs-6">{{ s.quantity }} {{ s.product.unit.symbol if s.product.unit else 'ad' }}</td>
+          <td class="text-warning">{{ s.reserved_quantity }}</td>
+          <td><span class="badge bg-success-subtle text-success fs-6">{{ s.available_quantity }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-3 text-muted">Bu depoda henüz stok bulunmuyor.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Fatura {{ invoice.invoice_number }} - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 btn-print-hide">
+  <div>
+    <h4 class="fw-bold mb-1">Resmi Fatura Belgesi: {{ invoice.invoice_number }}</h4>
+    <span class="badge bg-primary-subtle text-primary me-2">{{ invoice.invoice_type }} FATURASI</span>
+    <span class="badge bg-success-subtle text-success">{{ invoice.payment_status }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-primary btn-sm"><i class="bi bi-printer me-1"></i>Yazdır / PDF Al</button>
+    <a href="{{ url_for('finance.list_invoices') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Fatura Listesi</a>
+  </div>
+</div>
+
+<!-- Printable Invoice Card -->
+<div class="erp-card p-4 bg-white text-dark shadow-sm">
+  <!-- Invoice Header -->
+  <div class="row align-items-center mb-4 pb-3 border-bottom">
+    <div class="col-6">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Nexora ERP" height="42" class="mb-2">
+      <div class="fw-bold fs-5 text-primary">NEXORA DAĞITIM VE GIDA A.Ş.</div>
+      <div class="small text-muted">Tuzla Organize Sanayi Bölgesi 4. Cadde No:42 İstanbul</div>
+      <div class="small text-muted">Tel: 0216 555 0000 | V.D: Marmara V.D. 8010099999</div>
+    </div>
+    <div class="col-6 text-end">
+      <h3 class="fw-bold text-uppercase text-secondary mb-1">FATURA</h3>
+      <div class="fs-5 fw-bold text-dark mb-1">{{ invoice.invoice_number }}</div>
+      <div class="small text-muted">Düzenleme Tarihi: <strong>{{ format_date(invoice.issue_date) }}</strong></div>
+      <div class="small text-muted">Son Ödeme Tarihi: <strong>{{ format_date(invoice.due_date) if invoice.due_date else '-' }}</strong></div>
+    </div>
+  </div>
+
+  <!-- Customer / Supplier Info Box -->
+  <div class="row mb-4">
+    <div class="col-6">
+      <div class="p-3 bg-light rounded border">
+        <h6 class="fw-bold text-muted small uppercase mb-2">SAYIN (SATIŞ YAPILAN Taraf)</h6>
+        <div class="fw-bold fs-6">{{ invoice.customer.company_name if invoice.customer else (invoice.supplier.company_name if invoice.supplier else 'Müşteri') }}</div>
+        <div class="small text-muted">Yetkili: {{ invoice.customer.authorized_person if invoice.customer else '-' }}</div>
+        <div class="small text-muted">V.D. / V.No: {{ invoice.customer.tax_office if invoice.customer else '' }} - {{ invoice.customer.tax_number if invoice.customer else '' }}</div>
+        <div class="small text-muted">Adres: {{ invoice.customer.address if invoice.customer else '' }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="p-3 bg-light rounded border">
+        <h6 class="fw-bold text-muted small uppercase mb-2">ÖDEME BİLGİLERİ</h6>
+        <div class="small"><strong>Ödeme Durumu:</strong> {{ invoice.payment_status }}</div>
+        <div class="small"><strong>Ödenen Tutar:</strong> {{ format_currency(invoice.paid_amount) }}</div>
+        <div class="small"><strong>Kalan Bakiye:</strong> {{ format_currency(invoice.remaining_amount) }}</div>
+        <div class="small"><strong>İlgili Sipariş:</strong> {{ invoice.sales_order.order_number if invoice.sales_order else '-' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Items Table -->
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th>#</th>
+          <th class="text-start">Ürün Hizmet Açıklaması</th>
+          <th>Miktar</th>
+          <th>Birim Fiyat</th>
+          <th>KDV %</th>
+          <th>Toplam (₺)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in invoice.items %}
+        <tr>
+          <td class="text-center">{{ loop.index }}</td>
+          <td class="fw-semibold">
+            <div>{{ item.product.name }}</div>
+            <div class="text-muted extra-small">Kod: {{ item.product.code }}</div>
+          </td>
+          <td class="text-center fw-bold">{{ item.quantity }} {{ item.product.unit.symbol if item.product.unit else 'ad' }}</td>
+          <td class="text-end">{{ format_currency(item.unit_price) }}</td>
+          <td class="text-center">%{{ item.vat_rate }}</td>
+          <td class="text-end fw-bold">{{ format_currency(item.total_price) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totals Summary -->
+  <div class="row justify-content-end mb-4">
+    <div class="col-5">
+      <table class="table table-sm border">
+        <tr>
+          <td>Ara Toplam:</td>
+          <td class="text-end fw-bold">{{ format_currency(invoice.subtotal) }}</td>
+        </tr>
+        <tr>
+          <td>Hesaplanan KDV:</td>
+          <td class="text-end fw-bold">{{ format_currency(invoice.vat_amount) }}</td>
+        </tr>
+        <tr class="table-primary fs-5 fw-bold">
+          <td>GENEL TOPLAM:</td>
+          <td class="text-end">{{ format_currency(invoice.grand_total) }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="row pt-4 mt-4 border-top text-center small text-muted">
+    <div class="col-6">
+      <p class="mb-4">Teslim Eden (Firma Imzası & Kaşe)</p>
+      <div>_______________________</div>
+    </div>
+    <div class="col-6">
+      <p class="mb-4">Teslim Alan (Müşteri Imzası & Kaşe)</p>
+      <div>_______________________</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

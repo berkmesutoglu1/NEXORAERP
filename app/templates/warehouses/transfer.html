@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Depo Transferi - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Depolar Arası Stok Transferi</h4>
+    <p class="text-muted small mb-0">Kaynak depodan hedef depoya stok sevk işlemi</p>
+  </div>
+  <a href="{{ url_for('warehouses.list_warehouses') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Vazgeç</a>
+</div>
+
+<div class="erp-card p-4 col-12 col-lg-8 mx-auto">
+  <form method="POST" action="{{ url_for('warehouses.transfer') }}">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-medium small">Kaynak Depo (Çıkış Yapılacak) *</label>
+        <select name="source_warehouse_id" class="form-select" required>
+          {% for w in warehouses %}
+            <option value="{{ w.id }}">{{ w.name }} ({{ w.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-medium small">Hedef Depo (Giriş Yapılacak) *</label>
+        <select name="target_warehouse_id" class="form-select" required>
+          {% for w in warehouses %}
+            <option value="{{ w.id }}">{{ w.name }} ({{ w.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-8">
+        <label class="form-label fw-medium small">Transfer Edilecek Ürün *</label>
+        <select name="product_id" class="form-select" required>
+          {% for p in products %}
+            <option value="{{ p.id }}">{{ p.code }} - {{ p.name }} (Mevcut Stok: {{ p.total_stock }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Miktar *</label>
+        <input type="number" step="0.1" name="quantity" class="form-control" placeholder="0.0" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-medium small">Transfer Açıklaması / Sevk Notu</label>
+        <textarea name="notes" class="form-control" rows="2" placeholder="Örn: Bölge şube stok takviyesi"></textarea>
+      </div>
+
+      <div class="col-12 mt-4 text-end">
+        <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-arrow-left-right me-2"></i>Transferi Gerçekleştir</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

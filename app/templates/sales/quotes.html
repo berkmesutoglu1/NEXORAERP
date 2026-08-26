@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Teklifler - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satış Teklifleri</h4>
+    <p class="text-muted small mb-0">Müşterilere verilen fiyat ve ürün teklifleri</p>
+  </div>
+  <a href="{{ url_for('sales.create_quote') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Teklif Oluştur</a>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Teklif No</th>
+          <th>Müşteri</th>
+          <th>Tarih</th>
+          <th>Genel Toplam</th>
+          <th>Durum</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotes %}
+        <tr>
+          <td class="fw-bold text-primary">{{ q.quote_number }}</td>
+          <td class="fw-semibold">{{ q.customer.company_name }}</td>
+          <td class="small text-muted">{{ format_date(q.date) }}</td>
+          <td class="fw-bold fs-6">{{ format_currency(q.grand_total) }}</td>
+          <td>
+            {% if q.status == 'Siparişe Dönüştü' %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check-all me-1"></i>Siparişe Dönüştü</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning">{{ q.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if q.status != 'Siparişe Dönüştü' %}
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#convertModal{{ q.id }}">
+                <i class="bi bi-arrow-right-circle me-1"></i>Siparişe Dönüştür
+              </button>
+
+              <!-- Modal: Convert to Order -->
+              <div class="modal fade" id="convertModal{{ q.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form method="POST" action="{{ url_for('sales.convert_quote', quote_id=q.id) }}">
+                      <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Teklifi Siparişe Dönüştür</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body text-start">
+                        <p class="small text-muted mb-3"><strong>{{ q.quote_number }}</strong> numaralı teklif siparişe dönüştürülecektir. Sevk edilmesini istediğiniz depoyu seçin:</p>
+                        <div class="mb-3">
+                          <label class="form-label small fw-medium">Çıkış Deposu *</label>
+                          <select name="warehouse_id" class="form-select" required>
+                            <option value="1">Merkez Depo - İstanbul</option>
+                            <option value="2">Ankara Lojistik Depo</option>
+                            <option value="3">İzmir Bölge Depo</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-success btn-sm px-3">Siparişe Dönüştür</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <span class="small text-muted">Tamamlandı</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">Teklif bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

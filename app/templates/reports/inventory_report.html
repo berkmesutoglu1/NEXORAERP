@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Stok Raporu - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Stok Değerleme ve Seviye Raporu</h4>
+    <p class="text-muted small mb-0">Ürün bazlı toplam envanter, kritik stok ve depo dağılımları</p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Yazdır</button>
+</div>
+
+<div class="erp-card p-3 mb-4">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Ürün Kodu</th>
+          <th>Ürün Adı</th>
+          <th>Kategori</th>
+          <th>Min Stok</th>
+          <th>Mevcut Stok</th>
+          <th>Alış Fiyatı</th>
+          <th>Stok Değeri (₺)</th>
+          <th>Stok Durumu</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        {% set tot_stk = p.total_stock %}
+        {% set val = tot_stk * (p.purchase_price or 0) %}
+        <tr>
+          <td class="fw-bold text-primary">{{ p.code }}</td>
+          <td class="fw-semibold">{{ p.name }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.category.name if p.category else '-' }}</span></td>
+          <td class="small text-muted">{{ p.min_stock_level }}</td>
+          <td class="fw-bold fs-6">{{ tot_stk }} {{ p.unit.symbol if p.unit else 'ad' }}</td>
+          <td>{{ format_currency(p.purchase_price) }}</td>
+          <td class="fw-bold text-dark">{{ format_currency(val) }}</td>
+          <td>
+            {% if tot_stk <= p.min_stock_level %}
+              <span class="badge bg-danger text-white"><i class="bi bi-exclamation-triangle-fill me-1"></i>Kritik Seviye</span>
+            {% else %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle-fill me-1"></i>Yeterli Stok</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

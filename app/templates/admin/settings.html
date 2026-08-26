@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sistem Ayarları - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Sistem ve Firma Ayarları</h4>
+    <p class="text-muted small mb-0">Genel konfigürasyon, veritabanı ve firma parametreleri</p>
+  </div>
+</div>
+
+<div class="erp-card p-4 col-12 col-lg-8 mx-auto">
+  <form>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-medium">Şirket Ünvanı</label>
+        <input type="text" class="form-control" value="NEXORA DAĞITIM VE GIDA A.Ş.">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small fw-medium">Sistem Versiyonu</label>
+        <input type="text" class="form-control" value="NEXORA ERP v3.5 Professional" readonly>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-medium">Varsayılan Para Birimi</label>
+        <input type="text" class="form-control" value="TRY (₺)" readonly>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-medium">Veritabanı Sürücüsü</label>
+        <input type="text" class="form-control" value="MySQL / Relational SQLAlchemy ORM" readonly>
+      </div>
+
+      <div class="col-12 mt-4 text-end">
+        <button type="button" class="btn btn-primary px-4 fw-semibold" onclick="alert('Ayarlar kaydedildi.')">Değişiklikleri Kaydet</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

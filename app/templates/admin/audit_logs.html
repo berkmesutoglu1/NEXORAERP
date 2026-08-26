@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}İşlem Logları - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Sistem İşlem Logları (Audit Log)</h4>
+    <p class="text-muted small mb-0">Tüm kullanıcı hareketlerinin güvenlik ve denetim kayıtları</p>
+  </div>
+</div>
+
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-2">
+    <div class="col-12 col-md-8">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="İşlem adı, kullanıcı veya açıklama ara..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="module" class="form-select form-select-sm">
+        <option value="">Tüm Modüller</option>
+        {% for m in modules %}
+          <option value="{{ m }}" {% if selected_module == m %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Tarih / Saat</th>
+          <th>Kullanıcı</th>
+          <th>Modül</th>
+          <th>Yapılan İşlem</th>
+          <th>Detay / Açıklama</th>
+          <th>IP Adresi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td class="small text-muted">{{ format_date(log.timestamp, fmt="%d.%m.%Y %H:%M:%S") }}</td>
+          <td class="fw-semibold">{{ log.user_name }}</td>
+          <td><span class="badge bg-secondary-subtle text-dark">{{ log.module }}</span></td>
+          <td class="fw-bold text-primary">{{ log.action }}</td>
+          <td class="small text-muted">{{ log.description or '-' }}</td>
+          <td class="extra-small font-monospace text-muted">{{ log.ip_address or '127.0.0.1' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">Log kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Sevkiyatlar - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Sevkiyat ve Lojistik Takibi</h4>
+    <p class="text-muted small mb-0">Sipariş teslimatları, araç ve şoför atamaları</p>
+  </div>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Sevkiyat No</th>
+          <th>Sipariş No</th>
+          <th>Müşteri</th>
+          <th>Araç / Şoför</th>
+          <th>Tarih</th>
+          <th>Durum</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in shipments %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('logistics.shipment_detail', shipment_id=s.id) }}" class="text-primary text-decoration-none">{{ s.shipment_number }}</a></td>
+          <td class="fw-semibold">{{ s.sales_order.order_number if s.sales_order else '-' }}</td>
+          <td>{{ s.customer.company_name }}</td>
+          <td class="small">
+            <div><i class="bi bi-truck text-muted me-1"></i>{{ s.vehicle.plate_number if s.vehicle else 'Atanmadı' }}</div>
+            <div class="text-muted extra-small"><i class="bi bi-person me-1"></i>{{ s.driver.full_name if s.driver else '-' }}</div>
+          </td>
+          <td class="small text-muted">{{ format_date(s.shipment_date) }}</td>
+          <td>
+            {% if s.status == 'Teslim Edildi' %}
+              <span class="badge-erp badge-success-erp"><i class="bi bi-check-circle-fill"></i> Teslim Edildi</span>
+            {% elif s.status == 'Yolda' %}
+              <span class="badge-erp badge-info-erp"><i class="bi bi-truck"></i> Yolda</span>
+            {% else %}
+              <span class="badge-erp badge-warning-erp"><i class="bi bi-hourglass-split"></i> {{ s.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('logistics.shipment_detail', shipment_id=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>Detay</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Sevkiyat kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

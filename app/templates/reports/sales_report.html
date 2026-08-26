@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Satış Raporu - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satış ve Ciro Raporu</h4>
+    <p class="text-muted small mb-0">Detaylı satış performansı, müşteri ve ürün dağılımı</p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Yazdır</button>
+</div>
+
+<div class="erp-card p-3 mb-4">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Sipariş No</th>
+          <th>Müşteri</th>
+          <th>Tarih</th>
+          <th>Ara Toplam</th>
+          <th>KDV Toplamı</th>
+          <th>Genel Toplam</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td class="fw-bold text-primary">{{ o.order_number }}</td>
+          <td class="fw-semibold">{{ o.customer.company_name }}</td>
+          <td class="small text-muted">{{ format_date(o.order_date) }}</td>
+          <td>{{ format_currency(o.subtotal) }}</td>
+          <td class="text-muted">{{ format_currency(o.vat_amount) }}</td>
+          <td class="fw-bold text-dark fs-6">{{ format_currency(o.grand_total) }}</td>
+          <td><span class="badge bg-info-subtle text-info">{{ o.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

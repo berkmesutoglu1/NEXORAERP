@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Stok Hareketleri - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Stok Hareket Logları</h4>
+    <p class="text-muted small mb-0">Satış, satın alma, depo transferi ve manuel stok hareketleri audit kaydı</p>
+  </div>
+  <a href="{{ url_for('inventory.adjust') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-sliders me-1"></i>Manuel Düzeltme / Fire</a>
+</div>
+
+<!-- Search & Filters -->
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('inventory.movements') }}" class="row g-2">
+    <div class="col-12 col-md-5">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Ürün adı, stok kodu veya evrak no..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="movement_type" class="form-select form-select-sm">
+        <option value="">Tüm Hareket Türleri</option>
+        <option value="SATIN_ALMA_GIRISI" {% if selected_type == 'SATIN_ALMA_GIRISI' %}selected{% endif %}>Satın Alma Girişi</option>
+        <option value="SATIS_CIKISI" {% if selected_type == 'SATIS_CIKISI' %}selected{% endif %}>Satış Çıkışı</option>
+        <option value="DEPO_TRANSFERI" {% if selected_type == 'DEPO_TRANSFERI' %}selected{% endif %}>Depo Transferi</option>
+        <option value="MANUEL_GIRIS" {% if selected_type == 'MANUEL_GIRIS' %}selected{% endif %}>Manuel Giriş</option>
+        <option value="MANUEL_CIKIS" {% if selected_type == 'MANUEL_CIKIS' %}selected{% endif %}>Manuel Çıkış</option>
+        <option value="FIRE" {% if selected_type == 'FIRE' %}selected{% endif %}>Fire / Zayi</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="warehouse_id" class="form-select form-select-sm">
+        <option value="">Tüm Depolar</option>
+        {% for w in warehouses %}
+          <option value="{{ w.id }}" {% if selected_warehouse == w.id %}selected{% endif %}>{{ w.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Hareket Kodu</th>
+          <th>Tarih</th>
+          <th>Hareket Türü</th>
+          <th>Ürün</th>
+          <th>Depo</th>
+          <th>Miktar</th>
+          <th>Evrak / Referans</th>
+          <th>Kullanıcı</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td class="fw-bold text-primary">{{ m.movement_code }}</td>
+          <td class="small text-muted">{{ format_date(m.created_at) }}</td>
+          <td>
+            {% if m.movement_type == 'SATIN_ALMA_GIRISI' %}
+              <span class="badge bg-success-subtle text-success">Satın Alma Girişi</span>
+            {% elif m.movement_type == 'SATIS_CIKISI' %}
+              <span class="badge bg-danger-subtle text-danger">Satış Çıkışı</span>
+            {% elif m.movement_type == 'DEPO_TRANSFERI' %}
+              <span class="badge bg-primary-subtle text-primary">Depo Transferi</span>
+            {% elif m.movement_type == 'FIRE' %}
+              <span class="badge bg-dark-subtle text-dark">Fire / Zayi</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">{{ m.movement_type }}</span>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">{{ m.product.name if m.product else '-' }}</td>
+          <td>{{ m.source_warehouse.name if m.source_warehouse else '-' }}</td>
+          <td class="fw-bold fs-6 {% if m.movement_type in ['SATIS_CIKISI','MANUEL_CIKIS','FIRE'] %}text-danger{% else %}text-success{% endif %}">
+            {% if m.movement_type in ['SATIS_CIKISI','MANUEL_CIKIS','FIRE'] %}-{% else %}+{% endif %}{{ m.quantity }}
+          </td>
+          <td class="small text-muted">{{ m.reference_number or m.notes or '-' }}</td>
+          <td class="small">{{ m.user.full_name if m.user else 'Sistem' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center py-4 text-muted">Stok hareketi kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

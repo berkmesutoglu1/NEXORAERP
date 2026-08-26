@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Müşteriler - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Müşteri Yönetimi</h4>
+    <p class="text-muted small mb-0">Toptan ve kurumsal müşteri hesapları</p>
+  </div>
+  <a href="{{ url_for('customers.create_customer') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Müşteri Ekle</a>
+</div>
+
+<!-- Search & Filters -->
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('customers.list_customers') }}" class="row g-2">
+    <div class="col-12 col-md-5">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Müşteri adı, kodu veya vergi no ara..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="city" class="form-select form-select-sm">
+        <option value="">Tüm Şehirler</option>
+        {% for c in cities %}
+          <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="type" class="form-select form-select-sm">
+        <option value="">Tüm Müşteri Tipleri</option>
+        <option value="Toptancı" {% if selected_type == 'Toptancı' %}selected{% endif %}>Toptancı</option>
+        <option value="Süpermarket" {% if selected_type == 'Süpermarket' %}selected{% endif %}>Süpermarket</option>
+        <option value="Restoran" {% if selected_type == 'Restoran' %}selected{% endif %}>Restoran</option>
+        <option value="Catering" {% if selected_type == 'Catering' %}selected{% endif %}>Catering</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<!-- Customers Table -->
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Müşteri Kodu</th>
+          <th>Firma Adı</th>
+          <th>Yetkili</th>
+          <th>Telefon / İletişim</th>
+          <th>Şehir / İlçe</th>
+          <th>Tip</th>
+          <th>Risk Limiti</th>
+          <th>Açık Bakiye</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('customers.detail', customer_id=c.id) }}" class="text-decoration-none text-primary">{{ c.code }}</a></td>
+          <td class="fw-semibold">{{ c.company_name }}</td>
+          <td>{{ c.authorized_person or '-' }}</td>
+          <td class="small">
+            <div><i class="bi bi-telephone text-muted me-1"></i>{{ c.phone or '-' }}</div>
+            <div class="text-muted extra-small"><i class="bi bi-envelope me-1"></i>{{ c.email or '-' }}</div>
+          </td>
+          <td>{{ c.city }} / {{ c.district }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ c.customer_type }}</span></td>
+          <td>{{ format_currency(c.risk_limit) }}</td>
+          <td>
+            {% if c.current_account %}
+              <span class="fw-bold {% if c.current_account.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                {{ format_currency(c.current_account.balance) }}
+              </span>
+            {% else %}
+              ₺0,00
+            {% endif %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{{ url_for('customers.detail', customer_id=c.id) }}" class="btn btn-outline-primary" title="Detay"><i class="bi bi-eye"></i></a>
+              <a href="{{ url_for('customers.edit_customer', customer_id=c.id) }}" class="btn btn-outline-secondary" title="Düzenle"><i class="bi bi-pencil"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center py-4 text-muted">Kayıtlı müşteri bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

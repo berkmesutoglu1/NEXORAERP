@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{% if customer %}Müşteri Düzenle{% else %}Yeni Müşteri{% endif %} - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">{% if customer %}Müşteri Kartını Düzenle: {{ customer.company_name }}{% else %}Yeni Müşteri Oluştur{% endif %}</h4>
+  <a href="{{ url_for('customers.list_customers') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Listeye Dön</a>
+</div>
+
+<div class="erp-card p-4 col-12 col-lg-10 mx-auto">
+  <form method="POST" action="{% if customer %}{{ url_for('customers.edit_customer', customer_id=customer.id) }}{% else %}{{ url_for('customers.create_customer') }}{% endif %}">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Müşteri Kodu *</label>
+        <input type="text" name="code" class="form-control" value="{{ customer.code if customer else '' }}" required {% if customer %}readonly{% endif %}>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label fw-medium small">Firma Ünvanı *</label>
+        <input type="text" name="company_name" class="form-control" value="{{ customer.company_name if customer else '' }}" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Yetkili Kişi</label>
+        <input type="text" name="authorized_person" class="form-control" value="{{ customer.authorized_person if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Telefon</label>
+        <input type="text" name="phone" class="form-control" value="{{ customer.phone if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">E-Posta</label>
+        <input type="email" name="email" class="form-control" value="{{ customer.email if customer else '' }}">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vergi Numarası</label>
+        <input type="text" name="tax_number" class="form-control" value="{{ customer.tax_number if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vergi Dairesi</label>
+        <input type="text" name="tax_office" class="form-control" value="{{ customer.tax_office if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Müşteri Tipi</label>
+        <select name="customer_type" class="form-select">
+          <option value="Toptancı" {% if customer and customer.customer_type == 'Toptancı' %}selected{% endif %}>Toptancı</option>
+          <option value="Süpermarket" {% if customer and customer.customer_type == 'Süpermarket' %}selected{% endif %}>Süpermarket</option>
+          <option value="Restoran" {% if customer and customer.customer_type == 'Restoran' %}selected{% endif %}>Restoran</option>
+          <option value="Catering" {% if customer and customer.customer_type == 'Catering' %}selected{% endif %}>Catering</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Şehir (İl)</label>
+        <input type="text" name="city" class="form-control" value="{{ customer.city if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">İlçe</label>
+        <input type="text" name="district" class="form-control" value="{{ customer.district if customer else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-medium small">Vade Süresi (Gün)</label>
+        <input type="number" name="payment_term_days" class="form-control" value="{{ customer.payment_term_days if customer else 30 }}">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-medium small">Risk Limiti (₺)</label>
+        <input type="number" step="0.01" name="risk_limit" class="form-control" value="{{ customer.risk_limit if customer else 0.0 }}">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-medium small">Açık Adres</label>
+        <textarea name="address" class="form-control" rows="2">{{ customer.address if customer else '' }}</textarea>
+      </div>
+
+      {% if customer %}
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="is_active" id="activeCheck" {% if customer.is_active %}checked{% endif %}>
+          <label class="form-check-label small" for="activeCheck">Aktif Müşteri</label>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-12 mt-4 text-end">
+        <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-check-circle me-1"></i>Kaydet</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <defs>
+    <linearGradient id="nexoraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#0d9488" />
+    </linearGradient>
+  </defs>
+  <!-- Logo Icon -->
+  <rect x="5" y="10" width="40" height="40" rx="10" fill="url(#nexoraGrad)" />
+  <path d="M16 38 V22 L34 38 V22" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- Brand Text -->
+  <text x="55" y="34" font-family="'Inter', sans-serif" font-weight="800" font-size="22" fill="#ffffff" letter-spacing="1">NEXORA</text>
+  <text x="156" y="34" font-family="'Inter', sans-serif" font-weight="400" font-size="22" fill="#0d9488">ERP</text>
+  <text x="56" y="47" font-family="'Inter', sans-serif" font-weight="500" font-size="9" fill="#94a3b8" letter-spacing="1.5">ENTERPRISE SYSTEM</text>
+</svg>

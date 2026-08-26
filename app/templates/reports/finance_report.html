@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Finans Raporu - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Nakit Akışı ve Finans Raporu</h4>
+    <p class="text-muted small mb-0">Toplam fatura, tahsilat ve ödeme nakit akış özeti</p>
+  </div>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Yazdır</button>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Toplam Kesilen Satış Faturası</span>
+      <div class="kpi-value text-primary mt-1">{{ format_currency(total_invoiced) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Toplam Yapılan Tahsilat (Giriş)</span>
+      <div class="kpi-value text-success mt-1">+{{ format_currency(total_collected) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="kpi-card">
+      <span class="kpi-title">Toplam Tedarikçi Ödemesi (Çıkış)</span>
+      <div class="kpi-value text-danger mt-1">-{{ format_currency(total_paid) }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

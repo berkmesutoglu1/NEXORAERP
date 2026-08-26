@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Faturalar - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Fatura Yönetimi</h4>
+    <p class="text-muted small mb-0">Satış ve satın alma e-fatura / resmi belgeleri</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('finance.list_invoices') }}" class="row g-2">
+    <div class="col-12 col-md-5">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Fatura numarası ile ara..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="type" class="form-select form-select-sm">
+        <option value="">Tüm Fatura Türleri</option>
+        <option value="SATIS" {% if selected_type == 'SATIS' %}selected{% endif %}>Satış Faturası</option>
+        <option value="ALIS" {% if selected_type == 'ALIS' %}selected{% endif %}>Alış Faturası</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="status" class="form-select form-select-sm">
+        <option value="">Tüm Ödeme Durumları</option>
+        <option value="ODENMEDI" {% if selected_status == 'ODENMEDI' %}selected{% endif %}>Ödenmedi</option>
+        <option value="KISMEN_ODENDI" {% if selected_status == 'KISMEN_ODENDI' %}selected{% endif %}>Kısmen Ödendi</option>
+        <option value="ODENDI" {% if selected_status == 'ODENDI' %}selected{% endif %}>Ödendi</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Fatura No</th>
+          <th>Fatura Türü</th>
+          <th>Cari Taraf</th>
+          <th>Tarih</th>
+          <th>Vade Tarihi</th>
+          <th>Genel Toplam</th>
+          <th>Ödenen Tutar</th>
+          <th>Ödeme Durumu</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('finance.invoice_detail', invoice_id=inv.id) }}" class="text-primary text-decoration-none">{{ inv.invoice_number }}</a></td>
+          <td>
+            {% if inv.invoice_type == 'SATIS' %}
+              <span class="badge bg-primary-subtle text-primary">Satış Faturası</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">Alış Faturası</span>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">
+            {{ inv.customer.company_name if inv.customer else (inv.supplier.company_name if inv.supplier else '-') }}
+          </td>
+          <td class="small text-muted">{{ format_date(inv.issue_date) }}</td>
+          <td class="small text-muted">{{ format_date(inv.due_date) if inv.due_date else '-' }}</td>
+          <td class="fw-bold fs-6">{{ format_currency(inv.grand_total) }}</td>
+          <td class="small text-success fw-bold">{{ format_currency(inv.paid_amount) }}</td>
+          <td>
+            {% if inv.payment_status == 'ODENDI' %}
+              <span class="badge-erp badge-success-erp"><i class="bi bi-check-circle-fill"></i> Ödendi</span>
+            {% elif inv.payment_status == 'KISMEN_ODENDI' %}
+              <span class="badge-erp badge-warning-erp"><i class="bi bi-pie-chart"></i> Kısmen Ödendi</span>
+            {% else %}
+              <span class="badge-erp badge-danger-erp"><i class="bi bi-clock"></i> Ödenmedi</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('finance.invoice_detail', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-printer me-1"></i>Görüntüle / Yazdır</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center py-4 text-muted">Fatura bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

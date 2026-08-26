@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Satış Siparişleri - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satış Siparişleri</h4>
+    <p class="text-muted small mb-0">Müşterilerden alınan aktif ve sevk edilen siparişler</p>
+  </div>
+  <a href="{{ url_for('sales.create_order') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Sipariş Gir</a>
+</div>
+
+<!-- Filters -->
+<div class="erp-card mb-4 p-3">
+  <form method="GET" action="{{ url_for('sales.list_orders') }}" class="row g-2">
+    <div class="col-12 col-md-8">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Sipariş no veya müşteri adı ara..." value="{{ search }}">
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <select name="status" class="form-select form-select-sm">
+        <option value="">Tüm Sipariş Durumları</option>
+        <option value="Beklemede" {% if selected_status == 'Beklemede' %}selected{% endif %}>Beklemede</option>
+        <option value="Onaylandı" {% if selected_status == 'Onaylandı' %}selected{% endif %}>Onaylandı</option>
+        <option value="Hazırlanıyor" {% if selected_status == 'Hazırlanıyor' %}selected{% endif %}>Hazırlanıyor</option>
+        <option value="Sevk Edildi" {% if selected_status == 'Sevk Edildi' %}selected{% endif %}>Sevk Edildi</option>
+        <option value="Teslim Edildi" {% if selected_status == 'Teslim Edildi' %}selected{% endif %}>Teslim Edildi</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-secondary btn-sm w-100">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<!-- Orders Table -->
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Sipariş No</th>
+          <th>Müşteri</th>
+          <th>Depo</th>
+          <th>Tarih</th>
+          <th>Genel Toplam</th>
+          <th>Durum</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td class="fw-bold"><a href="{{ url_for('sales.order_detail', order_id=o.id) }}" class="text-primary text-decoration-none">{{ o.order_number }}</a></td>
+          <td class="fw-semibold">{{ o.customer.company_name }}</td>
+          <td class="small">{{ o.warehouse.name if o.warehouse else '-' }}</td>
+          <td class="small text-muted">{{ format_date(o.order_date) }}</td>
+          <td class="fw-bold fs-6">{{ format_currency(o.grand_total) }}</td>
+          <td>
+            {% if o.status == 'Teslim Edildi' %}
+              <span class="badge-erp badge-success-erp"><i class="bi bi-check-circle-fill"></i> Teslim Edildi</span>
+            {% elif o.status == 'Beklemede' %}
+              <span class="badge-erp badge-warning-erp"><i class="bi bi-hourglass-split"></i> Beklemede</span>
+            {% elif o.status == 'Sevk Edildi' %}
+              <span class="badge-erp badge-info-erp"><i class="bi bi-truck"></i> Sevk Edildi</span>
+            {% else %}
+              <span class="badge-erp badge-info-erp">{{ o.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('sales.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>Detay</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Sipariş kaydı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

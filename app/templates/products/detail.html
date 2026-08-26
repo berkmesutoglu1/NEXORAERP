@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - Ürün Detayı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">{{ product.name }}</h4>
+    <span class="badge bg-primary-subtle text-primary me-2">{{ product.code }}</span>
+    <span class="badge bg-secondary-subtle text-secondary me-2">{{ product.category.name if product.category else '-' }}</span>
+    <span class="badge bg-dark-subtle text-dark">Barkod: {{ product.barcode or '-' }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('products.edit_product', product_id=product.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Düzenle</a>
+    <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Geri</a>
+  </div>
+</div>
+
+<!-- Key Product Metrics -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="kpi-card">
+      <span class="kpi-title">Alış Fiyatı</span>
+      <div class="kpi-value mt-1">{{ format_currency(product.purchase_price) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="kpi-card">
+      <span class="kpi-title">Satış Fiyatı</span>
+      <div class="kpi-value text-primary mt-1">{{ format_currency(product.sale_price) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="kpi-card">
+      <span class="kpi-title">Kâr Marjı %</span>
+      <div class="kpi-value text-success mt-1">+%{{ product.profit_margin }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="kpi-card">
+      <span class="kpi-title">Toplam Mevcut Stok</span>
+      <div class="kpi-value text-dark mt-1">{{ product.total_stock }} {{ product.unit.symbol if product.unit else 'ad' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Warehouse Stock Breakdown & LOT List -->
+  <div class="col-12 col-lg-5">
+    <div class="erp-card p-3 mb-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-houses me-2 text-primary"></i>Depolara Göre Stok Dağılımı</h6>
+      <ul class="list-group list-group-flush">
+        {% for ws in warehouse_stocks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2">
+          <span><i class="bi bi-geo-alt-fill text-muted me-2"></i>{{ ws.warehouse.name }}</span>
+          <span class="fw-bold fs-6">{{ ws.quantity }} {{ product.unit.symbol if product.unit else 'ad' }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item bg-transparent text-muted py-2">Depo stok verisi bulunmuyor.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- LOT & SKT List -->
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3 text-warning"><i class="bi bi-qr-code me-2"></i>Parti (LOT) ve SKT Listesi</h6>
+      <div class="table-responsive">
+        <table class="table align-middle extra-small">
+          <thead>
+            <tr>
+              <th>Lot No</th>
+              <th>Depo</th>
+              <th>SKT Date</th>
+              <th>Miktar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lot in lots %}
+            <tr>
+              <td class="fw-bold">{{ lot.lot_number }}</td>
+              <td>{{ lot.warehouse.name }}</td>
+              <td><span class="badge bg-warning-subtle text-warning">{{ format_date(lot.expiration_date) }}</span></td>
+              <td class="fw-semibold">{{ lot.quantity }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted">Lot kaydı bulunmuyor.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Movement History -->
+  <div class="col-12 col-lg-7">
+    <div class="erp-card p-3">
+      <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-arrow-down-up me-2 text-primary"></i>Son Stok Hareketleri</h6>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Hareket Türü</th>
+              <th>Depo</th>
+              <th>Miktar</th>
+              <th>Evrak / Not</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in movements %}
+            <tr>
+              <td class="small text-muted">{{ format_date(m.created_at) }}</td>
+              <td><span class="badge bg-secondary-subtle text-dark">{{ m.movement_type }}</span></td>
+              <td class="small">{{ m.source_warehouse.name if m.source_warehouse else '-' }}</td>
+              <td class="fw-bold {% if m.movement_type in ['SATIS_CIKISI','MANUEL_CIKIS','FIRE'] %}text-danger{% else %}text-success{% endif %}">
+                {% if m.movement_type in ['SATIS_CIKISI','MANUEL_CIKIS','FIRE'] %}-{% else %}+{% endif %}{{ m.quantity }}
+              </td>
+              <td class="small text-muted">{{ m.reference_number or m.notes or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center py-3 text-muted">Stok hareketi bulunmuyor.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

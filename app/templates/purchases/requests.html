@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Satın Alma Talepleri - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Satın Alma Talepleri</h4>
+    <p class="text-muted small mb-0">Departmanlar tarafından iletilen malzeme talepleri</p>
+  </div>
+</div>
+
+<div class="erp-card">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Talep No</th>
+          <th>Talep Eden</th>
+          <th>Ürün</th>
+          <th>Miktar</th>
+          <th>İhtiyaç Tarihi</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td class="fw-bold text-primary">{{ r.request_number }}</td>
+          <td>{{ r.requested_by.full_name }}</td>
+          <td class="fw-semibold">{{ r.product.name }}</td>
+          <td class="fw-bold">{{ r.quantity }} {{ r.product.unit.symbol if r.product.unit else 'ad' }}</td>
+          <td class="small text-muted">{{ format_date(r.needed_by_date) if r.needed_by_date else '-' }}</td>
+          <td><span class="badge bg-warning-subtle text-warning">{{ r.status }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">Bekleyen talep bulunmuyor.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

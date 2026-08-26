@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Roller ve Yetkiler - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Sistem Rolleri ve Yetki Matrisi</h4>
+    <p class="text-muted small mb-0">Role-Based Access Control (RBAC) yetkilendirme yapılandırması</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for r in roles %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="erp-card h-100 p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="fw-bold mb-0 text-primary">{{ r.name }}</h5>
+        <span class="badge bg-primary-subtle text-primary">{{ r.users|length }} Kullanıcı</span>
+      </div>
+      <p class="small text-muted mb-3">{{ r.description }}</p>
+      <div class="border-top pt-2 mt-auto">
+        <span class="badge bg-success-subtle text-success me-1">Modül Erişimi Aktif</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

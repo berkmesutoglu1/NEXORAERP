@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Gösterge Paneli - NEXORA ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Kurumsal Dağıtım Gösterge Paneli</h3>
+    <p class="text-muted small mb-0">Toptan gıda ve stok operasyonlarının gerçek zamanlı durumu</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('sales.create_order') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Satış</a>
+    <a href="{{ url_for('purchases.create_order') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-bag-plus me-1"></i>Satın Alma</a>
+  </div>
+</div>
+
+<!-- 6 KPI Metric Cards -->
+<div class="row g-3 mb-4">
+  <!-- Toplam Satış -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Toplam Satış</span>
+        <div class="kpi-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-cash-coin"></i></div>
+      </div>
+      <div class="kpi-value text-truncate">{{ format_currency(kpis.total_sales) }}</div>
+    </div>
+  </div>
+
+  <!-- Bugünkü Satış -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Bugünkü Satış</span>
+        <div class="kpi-icon bg-success bg-opacity-10 text-success"><i class="bi bi-graph-up-arrow"></i></div>
+      </div>
+      <div class="kpi-value text-truncate">{{ format_currency(kpis.todays_sales) }}</div>
+    </div>
+  </div>
+
+  <!-- Bekleyen Sipariş -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Bekleyen Sipariş</span>
+        <div class="kpi-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
+      </div>
+      <div class="kpi-value">{{ kpis.pending_orders }}</div>
+    </div>
+  </div>
+
+  <!-- Kritik Stok -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Kritik Stok</span>
+        <div class="kpi-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      </div>
+      <div class="kpi-value text-danger">{{ kpis.critical_stock_count }}</div>
+    </div>
+  </div>
+
+  <!-- Bekleyen Tahsilat -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Bekleyen Tahsilat</span>
+        <div class="kpi-icon bg-info bg-opacity-10 text-info"><i class="bi bi-wallet2"></i></div>
+      </div>
+      <div class="kpi-value text-truncate">{{ format_currency(kpis.pending_collections) }}</div>
+    </div>
+  </div>
+
+  <!-- Bu Ayki Ciro -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="kpi-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="kpi-title">Bu Ayki Ciro</span>
+        <div class="kpi-icon bg-purple bg-opacity-10 text-purple" style="color: #7c3aed; background-color: rgba(124, 58, 237, 0.1);"><i class="bi bi-calendar-check"></i></div>
+      </div>
+      <div class="kpi-value text-truncate">{{ format_currency(kpis.monthly_sales) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Dynamic Analytics Charts (Chart.js) -->
+<div class="row g-3 mb-4">
+  <!-- Monthly Sales Trend Chart -->
+  <div class="col-12 col-lg-8">
+    <div class="erp-card h-100">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Aylık Satış Trend Grafiği</h6>
+        <span class="badge bg-primary-subtle text-primary">Canlı DB Verisi</span>
+      </div>
+      <div class="p-3" style="height: 300px; position: relative;">
+        <canvas id="monthlySalesChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Sales Share Chart -->
+  <div class="col-12 col-lg-4">
+    <div class="erp-card h-100">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-pie-chart text-teal me-2"></i>Kategori Bazlı Satış</h6>
+      </div>
+      <div class="p-3" style="height: 300px; position: relative;">
+        <canvas id="categorySalesChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Top Selling Products -->
+  <div class="col-12 col-lg-6">
+    <div class="erp-card h-100">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-line text-success me-2"></i>En Çok Satan Ürünler</h6>
+      </div>
+      <div class="p-3" style="height: 260px; position: relative;">
+        <canvas id="topProductsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warehouse Stock Distribution -->
+  <div class="col-12 col-lg-6">
+    <div class="erp-card h-100">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-houses text-warning me-2"></i>Depo Stok Dağılımı</h6>
+      </div>
+      <div class="p-3" style="height: 260px; position: relative;">
+        <canvas id="warehouseStockChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tables Section: Recent Orders & Expiring LOT Warnings -->
+<div class="row g-3">
+  <!-- Recent Sales Orders -->
+  <div class="col-12 col-xl-7">
+    <div class="erp-card">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Son Satış Siparişleri</h6>
+        <a href="{{ url_for('sales.list_orders') }}" class="btn btn-sm btn-link text-decoration-none">Tümünü Gör &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Sipariş No</th>
+              <th>Müşteri</th>
+              <th>Tarih</th>
+              <th>Tutar</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for o in recent_orders %}
+            <tr>
+              <td>
+                <a href="{{ url_for('sales.order_detail', order_id=o.id) }}" class="fw-semibold text-primary text-decoration-none">
+                  {{ o.order_number }}
+                </a>
+              </td>
+              <td class="fw-medium">{{ o.customer.company_name }}</td>
+              <td class="text-muted small">{{ format_date(o.order_date) }}</td>
+              <td class="fw-bold">{{ format_currency(o.grand_total) }}</td>
+              <td>
+                {% if o.status == 'Teslim Edildi' %}
+                  <span class="badge-erp badge-success-erp"><i class="bi bi-check-circle-fill"></i> {{ o.status }}</span>
+                {% elif o.status == 'Beklemede' %}
+                  <span class="badge-erp badge-warning-erp"><i class="bi bi-hourglass-split"></i> {{ o.status }}</span>
+                {% elif o.status == 'Sevk Edildi' %}
+                  <span class="badge-erp badge-info-erp"><i class="bi bi-truck"></i> {{ o.status }}</span>
+                {% else %}
+                  <span class="badge-erp badge-info-erp">{{ o.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">Henüz sipariş bulunmuyor.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Food SKT / LOT Warnings Widget -->
+  <div class="col-12 col-xl-5">
+    <div class="erp-card">
+      <div class="erp-card-header">
+        <h6 class="fw-bold mb-0 text-warning"><i class="bi bi-exclamation-octagon-fill me-2"></i>SKT'si Yaklaşan Lotlar</h6>
+        <a href="{{ url_for('inventory.lots') }}" class="btn btn-sm btn-link text-decoration-none">Lot Takibi &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Ürün / Lot</th>
+              <th>Depo</th>
+              <th>SKT</th>
+              <th>Stok</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lot in expiring_lots %}
+            <tr>
+              <td>
+                <div class="fw-semibold small">{{ lot.product.name }}</div>
+                <div class="text-muted extra-small">Lot: {{ lot.lot_number }}</div>
+              </td>
+              <td class="small">{{ lot.warehouse.name }}</td>
+              <td>
+                <span class="badge bg-warning-subtle text-warning fw-semibold">{{ format_date(lot.expiration_date) }}</span>
+              </td>
+              <td class="fw-bold small">{{ lot.quantity }} {{ lot.product.unit.symbol }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-3">Yakın zamanda SKT'si dolacak lot yok.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

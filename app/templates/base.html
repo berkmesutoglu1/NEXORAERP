@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NEXORA ERP{% endblock %} - Enterprise Resource Planning</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <a href="{{ url_for('dashboard.index') }}" class="sidebar-logo">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Nexora ERP" height="38">
+      </a>
+    </div>
+
+    <div class="py-2">
+      <!-- DASHBOARD -->
+      <div class="sidebar-heading">DASHBOARD</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('dashboard.index') }}" class="sidebar-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Ana Panel</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- SATIŞ -->
+      <div class="sidebar-heading">SATIŞ</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('sales.list_quotes') }}" class="sidebar-link {% if 'sales.list_quotes' in request.endpoint or 'sales.create_quote' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-file-earmark-text-fill"></i>
+            <span>Teklifler</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('sales.list_orders') }}" class="sidebar-link {% if 'sales.list_orders' in request.endpoint or 'sales.create_order' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-cart-check-fill"></i>
+            <span>Satış Siparişleri</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('customers.list_customers') }}" class="sidebar-link {% if 'customers.' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Müşteriler</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- SATIN ALMA -->
+      <div class="sidebar-heading">SATIN ALMA</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('purchases.requests_list') }}" class="sidebar-link {% if 'purchases.requests' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-bag-plus-fill"></i>
+            <span>Talepler</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('purchases.list_orders') }}" class="sidebar-link {% if 'purchases.list_orders' in request.endpoint or 'purchases.create_order' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-bag-check-fill"></i>
+            <span>Satın Alma Siparişleri</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('suppliers.list_suppliers') }}" class="sidebar-link {% if 'suppliers.' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-building-fill"></i>
+            <span>Tedarikçiler</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- STOK & DEPO -->
+      <div class="sidebar-heading">STOK & DEPO</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('products.list_products') }}" class="sidebar-link {% if 'products.list' in request.endpoint or 'products.detail' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-box-seam-fill"></i>
+            <span>Ürün Kartları</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('products.categories') }}" class="sidebar-link {% if 'products.categories' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-tags-fill"></i>
+            <span>Kategoriler</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('warehouses.list_warehouses') }}" class="sidebar-link {% if 'warehouses.' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-houses-fill"></i>
+            <span>Depolar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('inventory.movements') }}" class="sidebar-link {% if 'inventory.movements' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-arrow-down-up"></i>
+            <span>Stok Hareketleri</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('inventory.lots') }}" class="sidebar-link {% if 'inventory.lots' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-qr-code-scan"></i>
+            <span>Lot / SKT Takibi</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- LOJİSTİK -->
+      <div class="sidebar-heading">LOJİSTİK</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('logistics.shipments') }}" class="sidebar-link {% if 'logistics.shipments' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-truck"></i>
+            <span>Sevkiyatlar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('logistics.vehicles') }}" class="sidebar-link {% if 'logistics.vehicles' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-person-badge-fill"></i>
+            <span>Araç & Şoförler</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- FİNANS -->
+      <div class="sidebar-heading">FİNANS</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('finance.list_invoices') }}" class="sidebar-link {% if 'finance.list_invoices' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-receipt-cutoff"></i>
+            <span>Faturalar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('finance.current_accounts') }}" class="sidebar-link {% if 'finance.current_accounts' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            <span>Cari Hesaplar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('finance.collections') }}" class="sidebar-link {% if 'finance.collections' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-cash-stack"></i>
+            <span>Tahsilatlar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('finance.payments') }}" class="sidebar-link {% if 'finance.payments' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-credit-card-fill"></i>
+            <span>Ödemeler</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- RAPORLAR -->
+      <div class="sidebar-heading">RAPORLAR</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('reports.sales_report') }}" class="sidebar-link {% if 'reports.sales' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Satış Raporu</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('reports.inventory_report') }}" class="sidebar-link {% if 'reports.inventory' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-pie-chart-fill"></i>
+            <span>Stok Raporu</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('reports.finance_report') }}" class="sidebar-link {% if 'reports.finance' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-currency-dollar"></i>
+            <span>Finans Raporu</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('reports.profitability_report') }}" class="sidebar-link {% if 'reports.profitability' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-percent"></i>
+            <span>Kârlılık Raporu</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- YÖNETİM -->
+      {% if current_user.role and current_user.role.name == 'Admin' %}
+      <div class="sidebar-heading">YÖNETİM</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="{{ url_for('admin.users') }}" class="sidebar-link {% if 'admin.users' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-person-gear"></i>
+            <span>Kullanıcılar</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('admin.audit_logs') }}" class="sidebar-link {% if 'admin.audit_logs' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-shield-check"></i>
+            <span>İşlem Logları</span>
+          </a>
+        </li>
+      </ul>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div id="content">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand main-navbar">
+      <div class="container-fluid px-0">
+        <button id="sidebarToggle" class="btn btn-link text-body p-0 me-3">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <span class="navbar-brand me-auto fw-bold d-none d-md-inline text-primary">
+          Nexora Distribution ERP
+        </span>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Theme Toggle -->
+          <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary rounded-circle px-2" title="Tema Değiştir">
+            <i class="bi bi-moon-stars-fill"></i>
+          </button>
+
+          <!-- Notifications Dropdown -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm position-relative rounded-circle px-2" data-bs-toggle="dropdown">
+              <i class="bi bi-bell-fill"></i>
+              {% if system_notifications %}
+              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                <span class="visually-hidden">Bildirim</span>
+              </span>
+              {% endif %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="width: 320px;">
+              <li class="dropdown-header fw-bold border-bottom">Sistem Bildirimleri ({{ system_notifications|length }})</li>
+              {% for notif in system_notifications %}
+              <li>
+                <a class="dropdown-item py-2 border-bottom" href="{{ notif.link }}">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi {{ notif.icon }} text-{{ notif.level }} fs-5"></i>
+                    <div>
+                      <div class="fw-semibold text-truncate small">{{ notif.title }}</div>
+                      <div class="text-muted small text-wrap" style="font-size: 0.75rem;">{{ notif.message }}</div>
+                    </div>
+                  </div>
+                </a>
+              </li>
+              {% else %}
+              <li class="dropdown-item text-center text-muted py-3">Yeni bildirim bulunmuyor</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-body" data-bs-toggle="dropdown">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+              </div>
+              <div class="d-none d-md-block text-start me-1">
+                <div class="fw-semibold small leading-tight">{{ current_user.full_name }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">{{ current_user.role.name if current_user.role else 'Kullanıcı' }}</div>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+              <li><span class="dropdown-item-text text-muted small">{{ current_user.email }}</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Body -->
+    <main class="p-4 flex-grow-1">
+      <!-- Flash Alert Toasts -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+              <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="p-3 text-center text-muted small border-top bg-body">
+      &copy; 2026 NEXORA ERP — Enterprise Resource Planning & Distribution System
+    </footer>
+  </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Main Custom JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
