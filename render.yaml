@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: nexora-erp
+    env: python
+    buildCommand: pip install -r requirements.txt && python seed_cli.py
+    startCommand: gunicorn run:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
